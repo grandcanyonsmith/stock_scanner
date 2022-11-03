@@ -83,8 +83,7 @@ class Stock:
         """
 
         weigths = np.repeat(1.0, period)/period
-        smas = np.convolve(values, weigths, 'valid')
-        return smas  # as a numpy array
+        return np.convolve(values, weigths, 'valid')
 
     def EMA(self, period, values=None):
 
@@ -138,9 +137,10 @@ class Stock:
 
                 # Used to generate random hex color to put on graph
                 def r(): return random.randint(0, 255)
+
                 randomColor = '#%02X%02X%02X' % (r(), r(), r())
 
-                maLabel = str(MA) + ' SMA'
+                maLabel = f'{str(MA)} SMA'
                 ax1.plot(self.dates[-SP:], computedSMA[-SP:], randomColor,
                          label=maLabel, linewidth=1.5)
 
@@ -162,7 +162,7 @@ class Stock:
                                fancybox=True, borderaxespad=0.)
             maLeg.get_frame().set_alpha(0.4)
             textEd = pylab.gca().get_legend().get_texts()
-            pylab.setp(textEd[0:5], color='w')
+            pylab.setp(textEd[:5], color='w')
 
             volumeMin = 0
 
@@ -251,4 +251,4 @@ class Stock:
             fig.savefig('example.png', facecolor=fig.get_facecolor())
 
         except Exception as e:
-            print('Error graphing data: ', str(e))
+            print('Error graphing data: ', e)

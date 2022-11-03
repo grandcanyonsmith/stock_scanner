@@ -30,8 +30,8 @@ while True:
     stocks = []
 
     # If stocks array is empty, pull stock list from stocks.txt file
-    stocks = stocks if len(stocks) > 0 else [
-        line.rstrip() for line in open("stocks.txt", "r")]
+    stocks = stocks or [line.rstrip() for line in open("stocks.txt", "r")]
+
 
     # Time frame you want to pull data from
     start = datetime.datetime.now()-datetime.timedelta(days=365)
@@ -50,15 +50,11 @@ while True:
             try:
                 data = []
 
-                print("Pulling data for " + ticker)
+                print(f"Pulling data for {ticker}")
 
                 stock = Stock(ticker, start, end)
 
-                # Append data to array
-                data.append(ticker.upper())
-
-                data.append(stock.closes[-1])
-
+                data.extend((ticker.upper(), stock.closes[-1]))
                 for MA in MAarr:
                     computedSMA = stock.SMA(period=MA)
                     # print(computedSMA)
@@ -66,43 +62,48 @@ while True:
 
                 currentRsi = float("{:.2f}".format(stock.rsi[-1]))
 
-                if currentRsi > 70:
+                if currentRsi > 70 or currentRsi < 30:
                     data.append(str(currentRsi))
                     # data.append(str(currentRsi) + " 🔥")
-                elif currentRsi < 30:
-                    data.append(str(currentRsi))
-                    # data.append(str(currentRsi) + " 🧊")
                 else:
                     data.append(currentRsi)
 
-                chartLink = "https://finance.yahoo.com/quote/" + ticker + "/chart?p=" + ticker
+                chartLink = f"https://finance.yahoo.com/quote/{ticker}/chart?p={ticker}"
 
                 data.append(chartLink)
 
                 allData.append(data)
 
-                # Shows chart only if current RSI is greater than or less than 70 or 30 respectively
-                # if currentRsi < 30 or currentRsi > 70:
+                            # Shows chart only if current RSI is greater than or less than 70 or 30 respectively
+                            # if currentRsi < 30 or currentRsi > 70:
 
-                #     stock.graph(MAarr)
+                            #     stock.graph(MAarr)
 
             except Exception as e:
-                print('Error: ', str(e))
+                print('Error: ', e)
 
             # payload = tabulate(allData, headers=flatten([
             #     'Stock', 'Price', [str(x) + " MA" for x in MAarr], "RSI", "chart"]))
             rsi = str(currentRsi)
-            total = ticker + " " + "=" + " "
+            total = f"{ticker} = "
 
             payload = {'stock': (total, currentRsi)}
 
 
-        #Sends webhook to zapier which then handles the Twilio API text sent to my phone
-            # r = requests.post(url = 'https://hooks.zapier.com/hooks/catch/1739571/oebuzsn/', data = payload)
-            # print(sent)
-
-        print(tabulate(allData, headers=flatten([
-            'Stock', 'Price', [str(x) + " MA" for x in MAarr], "RSI", "chart"])))
+        print(
+            tabulate(
+                allData,
+                headers=flatten(
+                    [
+                        'Stock',
+                        'Price',
+                        [f"{str(x)} MA" for x in MAarr],
+                        "RSI",
+                        "chart",
+                    ]
+                ),
+            )
+        )
 
 
 
